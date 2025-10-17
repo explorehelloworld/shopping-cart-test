@@ -1,16 +1,24 @@
 package com.example
 
 import cats.effect.IO
+import io.circe.{Decoder, HCursor}
 import io.circe.generic.auto._
 import io.circe.parser.decode
 import zio._
 import zio.http.{Client, Request, URL}
+
 import scala.concurrent.ExecutionContext
 
 object ProductTaxCalculator {
 
   final case class Product(name: String, price: BigDecimal)
   final case class ProductWithTax(name: String, price: BigDecimal, tax: BigDecimal, total: BigDecimal)
+
+  implicit val productDecoder: Decoder[Product] = (c: HCursor) =>
+    for {
+      name  <- c.downField("title").as[String]    // read "title" instead of "name"
+      price <- c.downField("price").as[BigDecimal]
+    } yield Product(name, price)
 
   //fetch from set of urls given in the readme.md file as part of assignemnt
   def fetchJsonZio(urlStr: String): zio.ZIO[zio.http.Client, Throwable, String] = {
