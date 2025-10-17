@@ -1,18 +1,18 @@
-ThisBuild / organization := "com.example"
-ThisBuild / scalaVersion := "2.13.14"
+ThisBuild / organization := "org.example"
+ThisBuild / scalaVersion := "2.13.16"
+ThisBuild / version := "0.1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).settings(
-  name := "cats-effect-3-quick-start",
-  libraryDependencies ++= Seq(
-    // "core" module - IO, IOApp, schedulers
-    // This pulls in the kernel and std modules automatically.
-    "org.typelevel" %% "cats-effect" % "3.5.4",
-    // concurrency abstractions and primitives (Concurrent, Sync, Async etc.)
-    "org.typelevel" %% "cats-effect-kernel" % "3.5.4",
-    // standard "effect" library (Queues, Console, Random etc.)
-    "org.typelevel" %% "cats-effect-std" % "3.5.4",
-    // better monadic for compiler plugin as suggested by documentation
-    compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-    "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
+lazy val root = (project in file("."))
+  .settings(
+    name := "cats-effect-3-quick-start",
+
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "cats-core" % "2.13.0", // latest compatible for Scala 2.13
+      "org.typelevel" %% "cats-effect-kernel_sjs1" % "3.7-4972921",
+      "org.typelevel" %% "cats-effect" % "3.7-4972921",
+      "org.typelevel" %% "cats-effect-std" % "3.7-4972921",
+      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
+    ),
+
+    addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
   )
-)
