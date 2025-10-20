@@ -1,13 +1,10 @@
 package com.example
 
 import cats.effect.IO
-import io.circe.{Decoder, HCursor}
-import io.circe.generic.auto._
 import io.circe.parser.decode
+import io.circe.{Decoder, HCursor}
 import zio._
-import zio.http.{Client, Request, URL}
-
-import scala.concurrent.ExecutionContext
+import zio.http.Client
 
 object ProductTaxCalculator {
 
@@ -26,7 +23,7 @@ object ProductTaxCalculator {
       for {
         url  <- zio.ZIO.fromEither(zio.http.URL.decode(urlStr))
           .mapError(e => new IllegalArgumentException(s"Invalid URL: $urlStr ($e)"))
-        res  <- zio.http.Client.request(zio.http.Request.get(url))
+        res  <- zio.http.Client.batched(zio.http.Request.get(url))
         _    <- if (res.status.isSuccess) zio.ZIO.unit
         else zio.ZIO.fail(new RuntimeException(s"couldnt call given url from HTTP module: ${res.status.code} for $urlStr"))
         body <- res.body.asString
@@ -47,7 +44,7 @@ object ProductTaxCalculator {
     }
   }
 
-  def fetchJsonIO(url: String)(implicit ec: ExecutionContext): IO[String] = {
+  private def fetchJsonIO(url: String): IO[String] = {
     val future = Unsafe.unsafe { implicit u =>
       Runtime.default.unsafe.runToFuture(
         fetchJsonZio(url).provide(Client.default)
@@ -56,7 +53,7 @@ object ProductTaxCalculator {
     IO.fromFuture(IO.pure(future))
   }
 
-  def fetchAndParse(url: String)(implicit ec: ExecutionContext): IO[Either[String, Product]] = {
+  def fetchAndParse(url: String): IO[Either[String, Product]] = {
     fetchJsonIO(url).attempt.map {
       case Right(jsonStr) => parseProduct(jsonStr) match {
         case Left(value) => Left(s"Malformed JSON: $value")
